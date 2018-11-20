@@ -18,7 +18,7 @@ URL = "http://github.com/chrisrink10/bindr"
 EMAIL = "chrisrink10@gmail.com"
 AUTHOR = "Christopher Rink"
 REQUIRES_PYTHON = ">=3.6.0"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 REQUIRED = []
 
@@ -104,6 +104,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
