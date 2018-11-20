@@ -36,7 +36,7 @@ def config_dict(s3_settings_dict, sms_providers):
         "support_emails": ["crink@crink.com", "crink@bindr.readthedocs.io"],
         "s3_settings": s3_settings_dict,
         "sms_providers": sms_providers,
-        "accounts": {"crink": "password", "crink2": "securepw"}
+        "accounts": {"crink": "password", "crink2": "securepw"},
     }
 
 
@@ -86,7 +86,7 @@ class TestNamedTuple:
                 s3_settings_dict["default_region"],
                 s3_settings_dict["max_item_size"],
             ),
-            config_dict["accounts"]
+            config_dict["accounts"],
         ) == bind(Config, config_dict)
 
     def test_forbid_unspecialized_generic(self):
@@ -170,7 +170,7 @@ class TestDataClass:
                 s3_settings_dict["default_region"],
                 s3_settings_dict["max_item_size"],
             ),
-            config_dict["accounts"]
+            config_dict["accounts"],
         ) == bind(ConfigDataClass, config_dict)
 
     def test_forbid_unspecialized_generic(self):

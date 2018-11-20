@@ -32,7 +32,7 @@ def _get_named_tuple_fields(cls: Type[C]) -> Fields:
 
 if sys.version_info >= (3, 7):
 
-    import dataclasses
+    import dataclasses  # pylint: disable=import-error
 
     def _get_concrete_type(field_type) -> _ConcreteClassDetails:
         return _ConcreteClassDetails(field_type.__origin__, len(field_type.__args__))
@@ -45,7 +45,7 @@ if sys.version_info >= (3, 7):
 
 
 elif sys.version_info >= (3, 6):
-    _ALLOWED_GENERICS = {
+    _ALLOWED_GENERICS: Dict[Type, _ConcreteClassDetails] = {
         List: _ConcreteClassDetails(list, 1),
         Iterable: _ConcreteClassDetails(list, 1),
         MutableMapping: _ConcreteClassDetails(dict, 2),
