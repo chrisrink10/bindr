@@ -1,4 +1,5 @@
 import sys
+import re
 from typing import (
     TypeVar,
     NamedTuple,
@@ -154,12 +155,16 @@ def _coerce_generic_type(  # pylint: disable=inconsistent-return-statements
     assert False, "Generic type must have been handled"
 
 
+_MUNGE_NAMES = re.compile(r"[\s|-]")
+
+
 def bind(cls: Type[C], dct: dict, raise_if_missing_attr: bool = True) -> C:
     """Recursively bind dictionary values to attributes on NamedTuple instances whose
     name matches dictionary keys."""
     field_types = _get_fields(cls)
     final_fields = {}
     for key, val in dct.items():
+        key = re.sub(_MUNGE_NAMES, "_", key)
         field_type = field_types.get(key, None)
         if field_type is None:
             if raise_if_missing_attr:

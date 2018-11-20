@@ -30,8 +30,8 @@ def s3_settings_dict():
 @pytest.fixture
 def config_dict(s3_settings_dict, sms_providers):
     return {
-        "api_key": "abcd",
-        "timeout_ms": 3875,
+        "api-key": "abcd",
+        "timeout ms": 3875,
         "pi": 3.14,
         "support_emails": ["crink@crink.com", "crink@bindr.readthedocs.io"],
         "s3_settings": s3_settings_dict,
@@ -70,8 +70,8 @@ class TestNamedTuple:
     ):
         assert Config(
             config_dict["support_emails"],
-            config_dict["api_key"],
-            config_dict["timeout_ms"],
+            config_dict["api-key"],
+            config_dict["timeout ms"],
             config_dict["pi"],
             [
                 Config.SMSServiceConfig(
@@ -154,8 +154,8 @@ class TestDataClass:
     ):
         assert ConfigDataClass(
             config_dict["support_emails"],
-            config_dict["api_key"],
-            config_dict["timeout_ms"],
+            config_dict["api-key"],
+            config_dict["timeout ms"],
             config_dict["pi"],
             [
                 ConfigDataClass.SMSServiceConfig(
