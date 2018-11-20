@@ -39,6 +39,7 @@ def config_dict(s3_settings_dict, sms_providers):
         "accounts": {"crink": "password", "crink2": "securepw"},
         "backup_db_hostname": None,
         "db-region": "us-east-1",
+        "db-credentials": ("admin", "password1"),
     }
 
 
@@ -66,6 +67,7 @@ class TestNamedTuple:
             accounts: Dict[str, str]
             backup_db_hostname: Optional[str]
             db_region: Optional[str]
+            db_credentials: tuple
             no_reply_email: str = "no-reply@python.org"
 
         return Config
@@ -94,6 +96,7 @@ class TestNamedTuple:
             config_dict["accounts"],
             config_dict["backup_db_hostname"],
             config_dict["db-region"],
+            config_dict["db-credentials"],
         ) == bind(Config, config_dict)
 
     def test_forbid_unspecialized_generic(self):
@@ -155,6 +158,7 @@ class TestDataClass:
             accounts: Dict[str, str]
             backup_db_hostname: Optional[str]
             db_region: Optional[str]
+            db_credentials: tuple
             no_reply_email: str = "no-reply@python.org"
 
         return Config
@@ -183,6 +187,7 @@ class TestDataClass:
             config_dict["accounts"],
             config_dict["backup_db_hostname"],
             config_dict["db-region"],
+            config_dict["db-credentials"],
         ) == bind(ConfigDataClass, config_dict)
 
     def test_forbid_unspecialized_generic(self):
