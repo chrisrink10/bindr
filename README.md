@@ -44,6 +44,26 @@ using a simple:
 pip install bindr
 ```
 
+## Why does this exist?
+
+Bindr is not meant to serve as a replacement for [12Factor](https://12factor.net/)
+methodology. There are certain niche cases where you might want to read
+in a structured file (such as JSON or YAML) and bind it directly to a
+typed object outside of application configuration (as demonstrated in the
+example above). In fact, application configuration created as a dictionary
+(perhaps from environment variables) is still a valid use case for a bound 
+object.
+
+Bindr exists as an alternative to the automatic binding syntax offered
+by [PyYAML](https://pyyaml.org/). The default object deserialization syntax
+in PyYAML is a leaky abstraction. Declarative data formats such as YAML 
+should not be concerned with the details of how objects are deserialized 
+in your application code.
+
+Objects generated via Bindr will give you typed objects that can be passed
+around and verified by MyPy and hinted in PyCharm, which is a distinct
+advantage over accessing multiple levels deep of nested dictionaries.
+
 ## License
 
 MIT License
