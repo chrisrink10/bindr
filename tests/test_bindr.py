@@ -1,5 +1,5 @@
 import sys
-from typing import NamedTuple, List, Dict
+from typing import NamedTuple, List, Dict, Optional
 
 import pytest
 
@@ -37,6 +37,7 @@ def config_dict(s3_settings_dict, sms_providers):
         "s3_settings": s3_settings_dict,
         "sms_providers": sms_providers,
         "accounts": {"crink": "password", "crink2": "securepw"},
+        "backup_db_hostname": None,
     }
 
 
@@ -62,6 +63,8 @@ class TestNamedTuple:
             sms_providers: List[SMSServiceConfig]
             s3_settings: S3Config
             accounts: Dict[str, str]
+            backup_db_hostname: Optional[str]
+            no_reply_email: str = "no-reply@python.org"
 
         return Config
 
@@ -87,6 +90,7 @@ class TestNamedTuple:
                 s3_settings_dict["max_item_size"],
             ),
             config_dict["accounts"],
+            config_dict["backup_db_hostname"],
         ) == bind(Config, config_dict)
 
     def test_forbid_unspecialized_generic(self):
@@ -146,6 +150,8 @@ class TestDataClass:
             sms_providers: List[SMSServiceConfig]
             s3_settings: S3Config
             accounts: Dict[str, str]
+            backup_db_hostname: Optional[str]
+            no_reply_email: str = "no-reply@python.org"
 
         return Config
 
@@ -171,6 +177,7 @@ class TestDataClass:
                 s3_settings_dict["max_item_size"],
             ),
             config_dict["accounts"],
+            config_dict["backup_db_hostname"],
         ) == bind(ConfigDataClass, config_dict)
 
     def test_forbid_unspecialized_generic(self):

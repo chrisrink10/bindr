@@ -13,6 +13,7 @@ from typing import (
     Any,
     Tuple,
     Optional,
+    Union,
 )
 
 
@@ -99,6 +100,16 @@ def _is_specialized_generic(cls) -> bool:
     return _is_generic(cls) and not cls.__parameters__
 
 
+def _is_optional(cls) -> bool:
+    """Return true if cls is specialized Optional."""
+    return (
+        _is_specialized_generic(cls)
+        and cls.__origin__ is Union
+        and len(cls.__args__) == 2
+        and type(None) in cls.__args__  # noqa
+    )
+
+
 def _coerce_type(
     concrete_type: Type[C], val: Any, raise_if_missing_attr: bool = True
 ) -> C:
@@ -155,6 +166,21 @@ def _coerce_generic_type(  # pylint: disable=inconsistent-return-statements
     assert False, "Generic type must have been handled"
 
 
+def _coerce_optional(
+    field_type: Type[C], val: Any, raise_if_missing_attr: bool = True
+) -> Optional[C]:
+    """Coerce an optional typed value to """
+    if val is None:
+        return None
+    type_args = tuple(
+        filter(
+            lambda t: t is not type(None), field_type.__args__  # type: ignore # noqa
+        )
+    )
+    assert len(type_args) == 1, "Optional types can only have two type arguments"
+    return _coerce_type(type_args[0], val, raise_if_missing_attr=raise_if_missing_attr)
+
+
 _MUNGE_NAMES = re.compile(r"[\s|-]")
 
 
@@ -175,6 +201,11 @@ def bind(cls: Type[C], dct: dict, raise_if_missing_attr: bool = True) -> C:
             raise TypeError(
                 f"Must use specialized generic for field type, not {field_type}"
             )
+        elif _is_optional(field_type):
+            final_fields[key] = _coerce_optional(
+                field_type, val, raise_if_missing_attr=raise_if_missing_attr
+            )
+            continue
         elif _is_specialized_generic(field_type):
             field_type, val = _coerce_generic_type(
                 field_type, val, raise_if_missing_attr=raise_if_missing_attr
