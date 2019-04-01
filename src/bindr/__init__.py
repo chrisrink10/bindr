@@ -42,9 +42,12 @@ if sys.version_info >= (3, 7):
 
     def _get_fields(cls) -> Fields:
         try:
-            return {field.name: field.type for field in dataclasses.fields(cls)}
+            fields = dataclasses.fields(cls)
         except TypeError:
             return _get_named_tuple_fields(cls)
+        else:
+            resolved_hints = get_type_hints(cls)
+            return {f.name: resolved_hints[f.name] for f in fields}
 
 
 elif sys.version_info >= (3, 6):
