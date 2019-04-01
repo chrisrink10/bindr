@@ -14,6 +14,7 @@ from typing import (
     Tuple,
     Optional,
     Union,
+    get_type_hints,
 )
 
 
@@ -29,7 +30,7 @@ class _ConcreteClassDetails(NamedTuple):
 def _get_named_tuple_fields(cls: Type[C]) -> Fields:
     """Return a dict of field names to types."""
     assert _is_named_tuple(cls), "Class must be created via NamedTuple"
-    return cls._field_types  # type: ignore # pylint: disable=protected-access
+    return get_type_hints(cls)
 
 
 if sys.version_info >= (3, 7):
@@ -41,9 +42,12 @@ if sys.version_info >= (3, 7):
 
     def _get_fields(cls) -> Fields:
         try:
-            return {field.name: field.type for field in dataclasses.fields(cls)}
+            fields = dataclasses.fields(cls)
         except TypeError:
             return _get_named_tuple_fields(cls)
+        else:
+            resolved_hints = get_type_hints(cls)
+            return {f.name: resolved_hints[f.name] for f in fields}
 
 
 elif sys.version_info >= (3, 6):

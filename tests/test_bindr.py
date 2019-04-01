@@ -1,3 +1,5 @@
+import __future__
+
 import sys
 from typing import NamedTuple, List, Dict, Optional
 
@@ -43,176 +45,155 @@ def config_dict(s3_settings_dict, sms_providers):
     }
 
 
-class TestNamedTuple:
-    @pytest.fixture(scope="class")
-    def Config(self):
-        class Config(NamedTuple):
-            class SMSServiceConfig(NamedTuple):
-                host: str
-                port: int
-                username: str
-                password: str
+try:
+    from ._pep563_config import PEP563ConfigNamedTuple, PEP563ConfigDataclass
+except (ImportError, SyntaxError):
+    PEP563ConfigNamedTuple = None
+    PEP563ConfigDataclass = None
 
-            class S3Config(NamedTuple):
-                default_bucket: str
-                default_region: str
-                max_item_size: int
 
-            support_emails: List[str]
-            api_key: str
-            timeout_ms: int
-            pi: float
-            sms_providers: List[SMSServiceConfig]
-            s3_settings: S3Config
-            accounts: Dict[str, str]
-            backup_db_hostname: Optional[str]
-            db_region: Optional[str]
-            db_credentials: tuple
-            no_reply_email: str = "no-reply@python.org"
+class ConfigNamedTuple(NamedTuple):
+    class SMSServiceConfig(NamedTuple):
+        host: str
+        port: int
+        username: str
+        password: str
 
-        return Config
+    class S3Config(NamedTuple):
+        default_bucket: str
+        default_region: str
+        max_item_size: int
 
-    def test_bind_named_tuple(
-        self, Config, config_dict, s3_settings_dict, sms_providers
-    ):
-        assert Config(
-            config_dict["support_emails"],
-            config_dict["api-key"],
-            config_dict["timeout ms"],
-            config_dict["pi"],
-            [
-                Config.SMSServiceConfig(
-                    sms_providers[0]["host"],
-                    sms_providers[0]["port"],
-                    sms_providers[0]["username"],
-                    sms_providers[0]["password"],
-                )
-            ],
-            Config.S3Config(
-                s3_settings_dict["default_bucket"],
-                s3_settings_dict["default_region"],
-                s3_settings_dict["max_item_size"],
-            ),
-            config_dict["accounts"],
-            config_dict["backup_db_hostname"],
-            config_dict["db-region"],
-            config_dict["db-credentials"],
-        ) == bind(Config, config_dict)
+    class InvalidConfig(NamedTuple):
+        support_emails: List[str]
 
-    def test_forbid_unspecialized_generic(self):
-        class InvalidConfig(NamedTuple):
-            support_emails: List
+    class Unspecialized(NamedTuple):
+        support_emails: List
 
-        with pytest.raises(TypeError):
-            bind(InvalidConfig, {"support_emails": ["something"]})
-
-    def test_raise_on_missing_attr(self):
-        class InvalidConfig(NamedTuple):
-            support_emails: List[str]
-
-        with pytest.raises(AttributeError):
-            bind(InvalidConfig, {"support_emails": ["something"], "api_key": "abcd"})
-
-    def test_allow_missing_attr(self):
-        class InvalidConfig(NamedTuple):
-            support_emails: List[str]
-
-        assert InvalidConfig(["something"]) == bind(
-            InvalidConfig,
-            {"support_emails": ["something"], "api_key": "abcd"},
-            raise_if_missing_attr=False,
-        )
+    support_emails: List[str]
+    api_key: str
+    timeout_ms: int
+    pi: float
+    sms_providers: List[SMSServiceConfig]
+    s3_settings: S3Config
+    accounts: Dict[str, str]
+    backup_db_hostname: Optional[str]
+    db_region: Optional[str]
+    db_credentials: tuple
+    no_reply_email: str = "no-reply@python.org"
 
 
 try:
     from dataclasses import dataclass
 except ImportError:
-    pass
+
+    def dataclass(v):
+        return v
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="dataclass added in Python 3.7")
-class TestDataClass:
-    @pytest.fixture
-    def ConfigDataClass(self):
-        @dataclass
-        class Config:
-            @dataclass
-            class SMSServiceConfig:
-                host: str
-                port: int
-                username: str
-                password: str
+@dataclass
+class ConfigDataclass:
+    @dataclass
+    class SMSServiceConfig:
+        host: str
+        port: int
+        username: str
+        password: str
 
-            @dataclass
-            class S3Config:
-                default_bucket: str
-                default_region: str
-                max_item_size: int
+    @dataclass
+    class S3Config:
+        default_bucket: str
+        default_region: str
+        max_item_size: int
 
-            support_emails: List[str]
-            api_key: str
-            timeout_ms: int
-            pi: float
-            sms_providers: List[SMSServiceConfig]
-            s3_settings: S3Config
-            accounts: Dict[str, str]
-            backup_db_hostname: Optional[str]
-            db_region: Optional[str]
-            db_credentials: tuple
-            no_reply_email: str = "no-reply@python.org"
+    @dataclass
+    class InvalidConfig:
+        support_emails: List[str]
 
-        return Config
+    @dataclass
+    class Unspecialized:
+        support_emails: List
 
-    def test_bind_dataclass(
-        self, ConfigDataClass, config_dict, s3_settings_dict, sms_providers
-    ):
-        assert ConfigDataClass(
-            config_dict["support_emails"],
-            config_dict["api-key"],
-            config_dict["timeout ms"],
-            config_dict["pi"],
-            [
-                ConfigDataClass.SMSServiceConfig(
-                    sms_providers[0]["host"],
-                    sms_providers[0]["port"],
-                    sms_providers[0]["username"],
-                    sms_providers[0]["password"],
-                )
-            ],
-            ConfigDataClass.S3Config(
-                s3_settings_dict["default_bucket"],
-                s3_settings_dict["default_region"],
-                s3_settings_dict["max_item_size"],
+    support_emails: List[str]
+    api_key: str
+    timeout_ms: int
+    pi: float
+    sms_providers: List[SMSServiceConfig]
+    s3_settings: S3Config
+    accounts: Dict[str, str]
+    backup_db_hostname: Optional[str]
+    db_region: Optional[str]
+    db_credentials: tuple
+    no_reply_email: str = "no-reply@python.org"
+
+
+@pytest.fixture(
+    params=[
+        ConfigNamedTuple,
+        pytest.param(
+            PEP563ConfigNamedTuple,
+            marks=pytest.mark.skipif(
+                not hasattr(__future__, "annotations"),
+                reason="no __future__.annotations support",
             ),
-            config_dict["accounts"],
-            config_dict["backup_db_hostname"],
-            config_dict["db-region"],
-            config_dict["db-credentials"],
-        ) == bind(ConfigDataClass, config_dict)
+        ),
+        pytest.param(
+            ConfigDataclass,
+            marks=pytest.mark.skipif(
+                sys.version_info < (3, 7), reason="dataclass added in Python 3.7"
+            ),
+        ),
+        pytest.param(
+            PEP563ConfigDataclass,
+            marks=pytest.mark.skipif(
+                sys.version_info < (3, 7), reason="dataclass added in Python 3.7"
+            ),
+        ),
+    ]
+)
+def Config(request):
+    return request.param
 
-    def test_forbid_unspecialized_generic(self):
-        @dataclass
-        class InvalidConfig:
-            support_emails: List
 
-        with pytest.raises(TypeError):
-            bind(InvalidConfig, {"support_emails": ["something"]})
+def test_bind_named_tuple(Config, config_dict, s3_settings_dict, sms_providers):
+    assert Config(
+        config_dict["support_emails"],
+        config_dict["api-key"],
+        config_dict["timeout ms"],
+        config_dict["pi"],
+        [
+            Config.SMSServiceConfig(
+                sms_providers[0]["host"],
+                sms_providers[0]["port"],
+                sms_providers[0]["username"],
+                sms_providers[0]["password"],
+            )
+        ],
+        Config.S3Config(
+            s3_settings_dict["default_bucket"],
+            s3_settings_dict["default_region"],
+            s3_settings_dict["max_item_size"],
+        ),
+        config_dict["accounts"],
+        config_dict["backup_db_hostname"],
+        config_dict["db-region"],
+        config_dict["db-credentials"],
+    ) == bind(Config, config_dict)
 
-    def test_raise_on_missing_attr(self):
-        @dataclass
-        class InvalidConfig:
-            support_emails: List[str]
 
-        with pytest.raises(AttributeError):
-            bind(InvalidConfig, {"support_emails": ["something"], "api_key": "abcd"})
+def test_forbid_unspecialized_generic(Config):
+    with pytest.raises(TypeError):
+        bind(Config.Unspecialized, {"support_emails": ["something"]})
 
-    def test_allow_missing_attr(self):
-        @dataclass
-        class InvalidConfig:
-            support_emails: List[str]
 
-        assert InvalidConfig(["something"]) == bind(
-            InvalidConfig,
-            {"support_emails": ["something"], "api_key": "abcd"},
-            raise_if_missing_attr=False,
-        )
+def test_raise_on_missing_attr(Config):
+    with pytest.raises(AttributeError):
+        bind(Config.InvalidConfig, {"support_emails": ["something"], "api_key": "abcd"})
+
+
+def test_allow_missing_attr(Config):
+    assert Config.InvalidConfig(["something"]) == bind(
+        Config.InvalidConfig,
+        {"support_emails": ["something"], "api_key": "abcd"},
+        raise_if_missing_attr=False,
+    )
